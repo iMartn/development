@@ -43,6 +43,7 @@ const:
   BLUE_GREEN_DEPLOYMENT: "1"
   SHOPWARE_HTTP_DEFAULT_TTL: 7200
   DOCKER_SYNC_ENABLED: false
+  DOCKER_SYNC_NAME: "app_sync"
   FEATURES: |
     FEATURE_NEXT_516=1
   DEVPORT: "8080"
@@ -69,10 +70,12 @@ environments:
     dynamic:
       DOCKER_APP_VOLUME_MOUNT: |
         DOCKER_SYNC_ENABLED=$(grep DOCKER_SYNC_ENABLED .env | xargs); DOCKER_SYNC_ENABLED=${DOCKER_SYNC_ENABLED#*=};
-        if [[ ${DOCKER_SYNC_ENABLED} ]]; then echo "app_server:/app:nocopy"; else echo ".:/app"; fi
+        DOCKER_SYNC_NAME=$(grep DOCKER_SYNC_NAME .env);DOCKER_SYNC_NAME=${DOCKER_SYNC_NAME#*=};
+        if [[ ${DOCKER_SYNC_ENABLED} ]]; then echo "${DOCKER_SYNC_NAME:-app_sync}:/app:nocopy"; else echo ".:/app"; fi
       DOCKER_APP_VOLUMES: |
         DOCKER_SYNC_ENABLED=$(grep DOCKER_SYNC_ENABLED .env | xargs); DOCKER_SYNC_ENABLED=${DOCKER_SYNC_ENABLED#*=};
-        if [[ ${DOCKER_SYNC_ENABLED} ]]; then echo "volumes:\n  app_server:\n    external: true"; else echo ""; fi
+        DOCKER_SYNC_NAME=$(grep DOCKER_SYNC_NAME .env);DOCKER_SYNC_NAME=${DOCKER_SYNC_NAME#*=};
+        if [[ ${DOCKER_SYNC_ENABLED} ]]; then echo "volumes:\n  ${DOCKER_SYNC_NAME:-app_sync}:\n    external: true"; else echo ""; fi
     templates:
       - source: ".env.dist"
         destination: ".env"
